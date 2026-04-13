@@ -49,6 +49,21 @@ export default function RootLayout({
         >
           {children}
           <PWAInstallPrompt />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator) {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                      console.log('OFZ ServiceWorker registered');
+                    }, function(err) {
+                      console.log('OFZ ServiceWorker failed: ', err);
+                    });
+                  });
+                }
+              `,
+            }}
+          />
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
