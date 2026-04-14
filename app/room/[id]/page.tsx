@@ -39,7 +39,7 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-black">
+    <div className="flex-1 flex flex-col h-[100dvh] overflow-hidden bg-black">
       <MeetingRoom roomName={id} />
     </div>
   );

@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                 <form action={createMeeting} className="flex-1">
                   <button
                     type="submit"
-                    className="w-full h-12 md:h-16 group relative overflow-hidden bg-black text-[#ffdc42] text-sm md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] hover:scale-[1.03] active:scale-[0.97] transition-all"
+                    className="w-full h-14 md:h-16 group relative overflow-hidden bg-black text-[#ffdc42] text-base md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] hover:scale-[1.03] active:scale-[0.97] transition-all"
                   >
                     <div className="flex items-center justify-center gap-3 relative z-10">
                       <Plus className="w-4 h-4 md:w-5 md:h-5" />
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
               ) : (
                 <Link 
                   href="/login"
-                  className="flex-1 h-12 md:h-16 bg-black text-[#ffdc42] text-sm md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all"
+                  className="flex-1 h-14 md:h-16 bg-black text-[#ffdc42] text-base md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all"
                 >
                   Sign in
                 </Link>

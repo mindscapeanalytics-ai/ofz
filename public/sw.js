@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ofz-workspace-v3'; // Bumped for network-first strategy
+const CACHE_NAME = 'ofz-workspace-v4'; // Bumped for RSC strategy
 const ASSETS_TO_CACHE = [
   '/manifest.webmanifest',
   '/icon-512.png'
@@ -22,15 +22,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only process standard GET requests to avoid breaking actions
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
 
-  // 1. Bypass Service Worker for Auth, API, and local dev
+  // 1. Bypass Service Worker strictly for Next.js Router, RSC, and API
   if (
-    url.pathname.startsWith('/api/auth') || 
-    url.pathname.startsWith('/api/livekit') ||
+    url.pathname.startsWith('/api') ||
     url.hostname === 'localhost' ||
     url.hostname === '127.0.0.1' ||
     url.pathname.includes('_next') ||
+    url.search.includes('_rsc') || 
     url.pathname.includes('favicon.ico')
   ) {
     return;

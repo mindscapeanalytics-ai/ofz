@@ -50,14 +50,12 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
       
       toast.success(type === "login" ? "OFZ Pulse Established" : "Co-working Account Created");
       
-      // Delay navigation slightly to allow cookie propagation
-      setTimeout(() => {
-        window.location.href = callbackUrl;
-      }, 500);
+      router.push(callbackUrl);
+      router.refresh();
     } catch (error) {
       toast.error("System Protocol Error. Connection lost.");
     } finally {
-      // Don't set loading to false here if we are redirecting
+      setLoading(false);
     }
   };
 

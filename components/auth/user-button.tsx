@@ -39,7 +39,7 @@ export function UserButton({ user }: { user: { name: string; email: string; imag
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)} 
           />
-          <div className="absolute right-0 mt-4 w-64 bg-white border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_#000000] p-2 z-50 animate-in fade-in zoom-in duration-200">
+          <div className="absolute text-black right-0 mt-4 w-64 bg-white border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_#000000] p-2 z-50 animate-in fade-in zoom-in duration-200">
             <div className="px-4 py-4 border-b-2 border-black/10 mb-2">
               <p className="text-sm font-black uppercase tracking-tighter truncate">{user.name}</p>
               <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest truncate">{user.email}</p>

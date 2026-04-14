@@ -14,7 +14,7 @@ import {
 import { RoomEvent, Track } from "livekit-client";
 import "@livekit/components-styles";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Loader2, MessageSquare, Edit3, Users, X, Share2, Check, Mic, MicOff } from "lucide-react";
+import { Loader2, MessageSquare, Edit3, Users, X, Share2, Check, Mic, MicOff, LogOut } from "lucide-react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
 
@@ -153,12 +153,15 @@ function MeetingInner({ roomName }: { roomName: string }) {
       className="flex-1 flex h-full relative overflow-hidden bg-neutral-950 font-sans cursor-pointer"
       onClick={toggleUI}
     >
-      <div className="flex-1 flex h-full relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="flex-1 flex h-full relative overflow-hidden">
         {/* Main Workspace */}
         <div className="flex-1 flex flex-col relative overflow-hidden group/workspace">
           {/* OFZ Brand Overlay - Responsive scale & Hide logic */}
-          <div className={`absolute top-4 md:top-6 left-4 md:left-8 z-30 pointer-events-none transition-all duration-500 
-            ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <div 
+            className={`absolute top-4 md:top-6 left-4 md:left-8 z-30 pointer-events-none transition-all duration-500 
+            ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="bg-white border-2 md:border-4 border-black px-3 md:px-6 py-1 md:py-2 rounded-xl md:rounded-2xl flex items-center gap-2 md:gap-4 pointer-events-auto shadow-[4px_4px_0px_#000000]">
               <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] md:text-sm font-black tracking-widest uppercase text-black truncate max-w-[120px] md:max-w-none">
@@ -173,8 +176,11 @@ function MeetingInner({ roomName }: { roomName: string }) {
           </div>
           
           {/* OFZ Desktop Side Controls (Hidden on mobile) */}
-          <div className={`hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col gap-5 z-40 transition-all duration-500
-            ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'}`}>
+          <div 
+            className={`hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 flex-col gap-5 z-40 transition-all duration-500
+            ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <SidebarToggle 
               active={sidebar === "chat"} 
               type="chat"
@@ -199,11 +205,23 @@ function MeetingInner({ roomName }: { roomName: string }) {
               icon={copied ? <Check className="w-6 h-6" /> : <Share2 className="w-6 h-6" />} 
               onClick={copyLink} 
             />
+            <SidebarToggle 
+              active={false} 
+              type="leave"
+              icon={<LogOut className="w-6 h-6" />} 
+              onClick={() => {
+                room.disconnect();
+                window.location.href = "/";
+              }} 
+            />
           </div>
 
           {/* Mobile Bottom Dock (TikTok/Zoom style) */}
-          <div className={`md:hidden fixed bottom-6 left-4 right-4 z-50 transition-all duration-500
-            ${showControls ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}`}>
+          <div 
+            className={`md:hidden fixed bottom-6 left-4 right-4 z-50 transition-all duration-500
+            ${showControls ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="glass-dark border-2 border-white/20 rounded-[2rem] p-4 flex items-center justify-around shadow-2xl backdrop-blur-3xl pb-safe">
               <MobileDockItem 
                 active={sidebar === "chat"} 
@@ -229,13 +247,25 @@ function MeetingInner({ roomName }: { roomName: string }) {
                 label="Invite"
                 onClick={copyLink} 
               />
+              <MobileDockItem 
+                active={false} 
+                icon={<LogOut className="w-5 h-5 text-red-500" />} 
+                label="Leave"
+                onClick={() => {
+                  room.disconnect();
+                  window.location.href = "/";
+                }} 
+              />
             </div>
           </div>
         </div>
 
         {/* Global Sidebar Overlay */}
         {sidebar && (
-          <div className="fixed md:relative inset-0 md:inset-auto md:w-[450px] bg-white border-l-0 md:border-l-8 border-black h-full flex flex-col shadow-2xl z-50 animate-in slide-in-from-right duration-500">
+          <div 
+            className="fixed md:relative inset-0 md:inset-auto md:w-[450px] bg-white border-l-0 md:border-l-8 border-black h-full flex flex-col shadow-2xl z-50 animate-in slide-in-from-right duration-500"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between p-4 md:p-6 border-b-4 border-black bg-[#ffdc42] pt-safe">
               <h2 className="font-black uppercase text-xl tracking-tighter text-black">{sidebar}</h2>
               <button 
@@ -290,7 +320,7 @@ function MobileDockItem({ active, icon, label, onClick }: { active: boolean, ico
 
 interface SidebarToggleProps {
   active: boolean;
-  type: "chat" | "whiteboard" | "participants" | "share";
+  type: "chat" | "whiteboard" | "participants" | "share" | "leave";
   icon: React.ReactNode;
   onClick: () => void;
 }
@@ -301,6 +331,7 @@ function SidebarToggle({ active, type, icon, onClick }: SidebarToggleProps) {
     whiteboard: active ? "bg-purple-600 text-white" : "bg-white text-black hover:bg-purple-50",
     participants: active ? "bg-orange-600 text-white" : "bg-white text-black hover:bg-orange-50",
     share: active ? "bg-green-600 text-white" : "bg-white text-black hover:bg-green-50",
+    leave: "bg-white text-red-500 border-[3px] border-red-500 hover:bg-red-50",
   };
 
   return (
