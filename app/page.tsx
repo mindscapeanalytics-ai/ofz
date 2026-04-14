@@ -68,7 +68,7 @@ export default async function DashboardPage() {
               ) : (
                 <Link 
                   href="/login"
-                  className="flex-1 h-14 md:h-16 bg-black text-[#ffdc42] text-base md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all"
+                  className="flex-1 w-full h-14 md:h-16 bg-black text-[#ffdc42] text-base md:text-lg font-black uppercase rounded-xl md:rounded-[1.5rem] flex items-center justify-center hover:scale-[1.03] active:scale-[0.97] transition-all"
                 >
                   Sign in
                 </Link>
