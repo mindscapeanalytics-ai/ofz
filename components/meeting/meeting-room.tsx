@@ -74,6 +74,9 @@ export function MeetingRoom({ roomName }: { roomName: string }) {
       data-lk-theme="default"
       className="flex-1 flex flex-col relative selection:bg-[#ffdc42] selection:text-black overflow-hidden"
       connect={true}
+      onDisconnected={() => {
+        window.location.href = "/";
+      }}
     >
       <LayoutContextProvider>
         <MeetingInner roomName={roomName} />
