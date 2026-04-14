@@ -122,3 +122,42 @@
   background-color: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(12px) !important;
 }
+
+/* Mobile Safe Area & Touch Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.animate-in {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.slide-up {
+  animation-name: slideUp;
+}
+
+.slide-down {
+  animation-name: slideDown;
+}
+

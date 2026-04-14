@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { signIn, signUp } from "@/lib/auth-client";
-import { Loader2, Mail, Lock, User, ArrowRight, Video } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Loader2, Mail, Lock as LockIcon, User, ArrowRight, Video } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { checkUserRegistration } from "@/app/actions/auth";
+
 
 export function AuthForm({ type }: { type: "login" | "register" }) {
   const [email, setEmail] = useState("");
@@ -13,6 +13,8 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,21 +22,15 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
 
     try {
       if (type === "login") {
-        const isRegistered = await checkUserRegistration(email);
-        if (!isRegistered) {
-          toast.error("Account not registered. Please sign up first.");
-          setLoading(false);
-          return;
-        }
-
         const { error } = await signIn.email({
           email,
           password,
-          callbackURL: "/",
+          callbackURL: callbackUrl,
         });
 
         if (error) {
           toast.error(error.message || "Invalid credentials. Please attempt again.");
+          setLoading(false);
           return;
         }
       } else {
@@ -42,24 +38,30 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
           email,
           password,
           name,
-          callbackURL: "/",
+          callbackURL: callbackUrl,
         });
 
         if (error) {
           toast.error(error.message || "Registration initialization failed.");
+          setLoading(false);
           return;
         }
       }
       
       toast.success(type === "login" ? "OFZ Pulse Established" : "Co-working Account Created");
-      router.push("/");
-      router.refresh();
+      
+      // Delay navigation slightly to allow cookie propagation
+      setTimeout(() => {
+        window.location.href = callbackUrl;
+      }, 500);
     } catch (error) {
       toast.error("System Protocol Error. Connection lost.");
     } finally {
-      setLoading(false);
+      // Don't set loading to false here if we are redirecting
     }
   };
+
+
 
   return (
     <div className={`w-full max-w-lg bg-white border-4 border-black rounded-[2.5rem] md:rounded-[3.5rem] shadow-[20px_20px_0px_#000000] transition-all overflow-hidden flex flex-col items-center 
@@ -117,7 +119,7 @@ export function AuthForm({ type }: { type: "login" | "register" }) {
         <div className="space-y-1">
           <label className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] ml-4 text-black/60">Secure Access Key</label>
           <div className="relative group">
-            <Lock className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black opacity-30 group-focus-within:opacity-100 transition-opacity" />
+            <LockIcon className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black opacity-30 group-focus-within:opacity-100 transition-opacity" />
             <input
               type="password"
               placeholder="••••••••"

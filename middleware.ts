@@ -15,41 +15,58 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasSessionCookie =
-    request.cookies.has("better-auth.session_token") ||
-    request.cookies.has("__Secure-better-auth.session_token");
+  // Detect session token (supports both secure and non-secure environments)
+  const sessionToken = 
+    request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("__Secure-better-auth.session_token")?.value;
 
-  // Allow guest access to Home Page
-  if (isHomePage) {
-    return NextResponse.next();
-  }
+  const baseURL = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
-  // Redirect to login if not authenticated and not on an auth/public page
-  if (!hasSessionCookie && !isAuthPage) {
-    return NextResponse.next(); // Let the next block handle session verification for accuracy
-  }
+  // Helper to fetch session with high reliability
+  const getSession = async () => {
+    if (!sessionToken) return null;
+    try {
+      const { data: session } = await betterFetch<Session>("/api/auth/get-session", {
+        baseURL,
+        headers: {
+          cookie: request.headers.get("cookie") || "",
+        },
+      });
+      return session;
+    } catch (e) {
+      console.error("[MIDDLEWARE] Session fetch failed:", e);
+      return null;
+    }
+  };
 
-  if (hasSessionCookie) {
-    const baseURL = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-    const { data: session } = await betterFetch<Session>("/api/auth/get-session", {
-      baseURL,
-      headers: {
-        cookie: request.headers.get("cookie") || "",
-      },
-    });
-
-    // If already logged in, don't allow access to login/register pages
-    if (session && isAuthPage) {
+  // 1. If on auth page but already have a session, redirect to home/dashboard
+  if (isAuthPage && sessionToken) {
+    const session = await getSession();
+    if (session) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+  }
 
-    // Protect all other routes except public ones
-    if (!session && !isAuthPage) {
-      return NextResponse.redirect(new URL("/login", request.url));
+  // 2. Protect all routes except auth pages and the public home page
+  if (!isAuthPage && !isHomePage) {
+    if (!sessionToken) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(url);
     }
-  } else if (!isAuthPage) {
-    // No session cookie and not an auth page? Redirect (unless it's the home page handled above)
-    return NextResponse.redirect(new URL("/login", request.url));
+
+    // Verify token validity for protected routes
+    const session = await getSession();
+    if (!session) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("callbackUrl", pathname);
+      
+      const response = NextResponse.redirect(url);
+      // Clean up invalid tokens
+      response.cookies.delete("better-auth.session_token");
+      response.cookies.delete("__Secure-better-auth.session_token");
+      return response;
+    }
   }
 
   return NextResponse.next();
@@ -58,3 +75,4 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+

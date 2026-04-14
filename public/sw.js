@@ -1,14 +1,13 @@
-const CACHE_NAME = 'ofz-workspace-v2'; // Bumped to force browser update
-const ASSETS = [
-  '/',
+const CACHE_NAME = 'ofz-workspace-v3'; // Bumped for network-first strategy
+const ASSETS_TO_CACHE = [
   '/manifest.webmanifest',
   '/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Force active immediately
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
 });
 
@@ -23,12 +22,39 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // CRITICAL: Immediately bypass all Auth and API calls
-  if (event.request.url.includes('/api/auth') || event.request.url.includes('localhost')) {
+  const url = new URL(event.request.url);
+
+  // 1. Bypass Service Worker for Auth, API, and local dev
+  if (
+    url.pathname.startsWith('/api/auth') || 
+    url.pathname.startsWith('/api/livekit') ||
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.pathname.includes('_next') ||
+    url.pathname.includes('favicon.ico')
+  ) {
     return;
   }
 
+
+  // 2. Navigation requests: Network First, falling back to cache
+  if (event.request.mode === 'navigate' || url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clonedResponse = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedResponse));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 3. Static Assets: Cache First
   event.respondWith(
-    caches.match(event.request).then((response) => response || fetch(event.request))
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
+    })
   );
 });

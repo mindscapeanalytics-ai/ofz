@@ -1,5 +1,7 @@
 import { AuthForm } from "@/components/auth/auth-form";
 
+export const dynamic = "force-dynamic";
+
 export default function RegisterPage() {
   return (
     <div className="w-full h-[100dvh] flex items-center justify-center bg-[#ffdc42] p-4 md:p-8 overflow-hidden">
